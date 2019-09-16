@@ -1,6 +1,6 @@
-# hos
+# hosh5
 
-> H5 pages
+> H5 pages using Vue.
 
 ## Build Setup
 
@@ -19,3 +19,6 @@ npm run build --report
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+# 未完成
+暂时不知道访问程序的完整URL是什么，所以无法得知能够获取`taxCode`的地址如何获得

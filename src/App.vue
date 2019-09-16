@@ -28,6 +28,13 @@ html, body {
   letter-spacing: 0;
 }
 
+/* 提示框样式 */
+.el-message {
+  top: 35px !important;     /* 覆盖内联样式 */
+  min-width: 300px;
+  border-radius: 7px;
+}
+
 /*#app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

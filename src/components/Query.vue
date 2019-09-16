@@ -18,14 +18,14 @@
           <!-- <span>{{ submitForm.taxId }}</span> -->
         </el-form-item>
         <el-form-item label="客户姓名">
-          <el-input style="max-width: 220px" v-model="submitForm.clientName" placeholder="客户姓名"></el-input>
+          <el-input clearable style="max-width: 220px" v-model="submitForm.clientName" placeholder="请输入客户名称"></el-input>
         </el-form-item>
         <el-form-item label="时间">
           <el-date-picker v-model="submitForm.queryTime" type="date" placeholder="请输入交易时间"></el-date-picker>
         </el-form-item>
         <!-- 表单验证的时候除了在el-form里面设置:rules属性和ref属性（注册组件，用于核对输入是否正确），还需要设置el-form-item对应需要检查属性的prop为rules内对应检查方法的名字 -->
         <el-form-item label="金额" prop="queryAmount">
-          <el-input style="max-width: 220px" v-model="submitForm.queryAmount" placeholder="请输入交易金额"></el-input>
+          <el-input clearable style="max-width: 220px" v-model="submitForm.queryAmount" placeholder="请输入交易金额"></el-input>
         </el-form-item>
       </el-form>
       <el-row type="flex" justify="center">
@@ -35,7 +35,7 @@
   </div>
 </template>
 <script>
-  import { fetchOrder } from '../api'
+  import { fetchOrder, fetchCompanyInfo } from '../api'
   export default {
     name: 'Query',
     data: function () {
@@ -50,7 +50,7 @@
           queryTime: '',
           queryAmount: ''
         },
-        imageUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+        imageUrl: require('../assets/icon.png'),      // webpack打包的原因，如果直接写url会当做字符串处理
         rulesQuery: {
           queryAmount: [
             {pattern: /^[\d\.]*$/, message: '金额只能是数字', trigger: 'blur'}
@@ -74,11 +74,16 @@
               if (res.status == 200) {
                 let retData = res.data
                 if (retData.code == 1) {
+                  // 储存公司信息与查询获得的开票信息数组，待跳转到开票页面后继续使用
+                  let sesData = {
+                    data: retData.data,
+                    name: that.companyInfo.companyName
+                  }
+                  this.$store.dispatch('setOrderData', sesData)
                   that.$message({
                     type: 'success',
                     message: retData.message
                   })
-                  this.$store.dispatch('setOrderData', retData.data)
                   this.$router.push('/submit')
                 } else {
                   that.$message({
@@ -101,12 +106,36 @@
           }
         })
 
+      },
+      // 根据提供的URL地址截取税号并用其查询获得公司信息
+      loadCompanyInfo: function (path) {
+        // 用正则匹配taxCode后面的数字串
+        let e = /(?:taxCode=)(\d+)/
+        let taxCode = e.exec(path)[1]
+        let params = {
+          taxCode: taxCode
+        }
+        fetchCompanyInfo(params).then(res => {
+          if (res.data.code == 1) {
+            let retData = res.data.data
+            this.companyInfo.companyName = retData.sellerName
+            this.submitForm.taxId = retData.sellerTaxCode
+          } else {
+            this.$message({
+              type: 'error',
+              message: res.message
+            })
+          }
+        })
       }
     },
     mounted: function () {
-      this.companyInfo.companyName = '浙江省肿瘤医院'     // 暂时写死
-      this.submitForm.taxId = '913301050609810663'       // 暂时写死
-      this.submitForm.queryTime = new Date()             // 默认输入是当天的日期
+      // 根据URL获取税号并加载公司信息
+      // 另外，获取URL的方法暂时是个谜（截止0916）
+      this.loadCompanyInfo('http://ip:port/xxx/?taxCode=913301050609810663')
+      console.log('当前完整路径：', this.$route.path)
+      // 日期选择器的默认输入是当天的日期
+      this.submitForm.queryTime = new Date()
     }
   }
 </script>
@@ -116,9 +145,9 @@
     width: 100%;
 
     .company-info {
-      max-height: 30%;
+      //max-height: calc(~'343px');
       width: 100%;
-      padding: 5vh 0vh 8vh 0vh;
+      padding: 3vh 0vh 5vh 0vh;
       //背景图
       //background: linear-gradient(lightblue, #FFF), url('../assets/bg.png');
       background-image: url('../assets/bg.png');
@@ -137,7 +166,7 @@
       .company-icon {
         height: 100px;
         width: 100px;
-        margin: 0vh 0vh 5vh 0vh;
+        margin: 0vh 0vh 2vh 0vh;
         // 头像框设置为圆形
         border-radius: 50%;
         overflow: hidden;

@@ -2,15 +2,16 @@
   <div class="submit">
     <!-- 顶端提示（不知是否固定，暂时做成固定在顶端） -->
     <el-row class="submit-header" type="flex" justify="space-between">
-      <el-col>{{ companyInfo.companyName }}</el-col>
-      <el-col style="text-align: right">共{{ itemNum }}条数据</el-col>
+      <el-col :span="17">{{ companyInfo.companyName }}</el-col>
+      <el-col :span="7" style="text-align: right">共{{ itemNum }}条数据</el-col>
     </el-row>
     <!-- 数据页 -->
     <el-row class="gray-border submit-check-list" v-for="item in orderDataList" :key="item.label" v-bind:class="{ gray: item.disabled == true, extended: item.label == itemNum, extendedAhead: item.label == 1}">
       <!-- 单选 -->
       <el-col class="submit-radio" :span="3">
         <!-- 如果流水号是唯一的，那可以用流水号做key，不过还没有格式下来所以暂时随便写一个label作为key -->
-        <el-radio class="radio-circle radio-no-label" v-model="submitForm.radioMain" :label="item.label" :disabled="item.disabled" @change="handleRadioChange"></el-radio>
+        <!-- 单选框按钮样式根据是否选中来切换背景图 -->
+        <el-radio v-bind:class="{ radioIsChecked: submitForm.radioMain == item.label, radioNotChecked: submitForm.radioMain != item.label }" class="radio-circle radio-no-label" v-model="submitForm.radioMain" :label="item.label" :disabled="item.disabled" @change="handleRadioChange"></el-radio>
       </el-col>
       <!-- 信息，如果信息数量多的话做成v-for会更好 -->
       <el-col class="submit-info" :span="21">
@@ -34,8 +35,8 @@
           <el-col :sm="3" :span="7" class="submit-info-label">项目名称</el-col>
           <el-col :xs="15" :offset="2" :span="15" class="submit-info-text">
             <el-row v-for="(key, value) in item.prjName" :key="value">
-              <!-- 发送请求之前可能有提示用户【检查选中的第二个单选和选中行数据的匹配情况】的必要，或者是用户选中了第二个选项就将第一个按钮改为选中对应的行数 -->
-              <el-radio @change="handleRadioSubChange" v-model="submitForm.radioSub" :label="value" :disabled="item.disabled" :checked="true"></el-radio>
+              <!-- 单选框按钮样式根据是否选中来切换背景图 -->
+              <el-radio v-bind:class="{ radioIsChecked: submitForm.radioSub == value, radioNotChecked: submitForm.radioSub != value }" @change="handleRadioSubChange()" v-model="submitForm.radioSub" :label="value" :disabled="item.disabled" :checked="true"></el-radio>
               <span class="submit-radio-text">{{ key }}</span>
             </el-row>
           </el-col>
@@ -58,8 +59,8 @@
           companyName: ''
         },
         orderDataList: [],                                   // 页面展示的数据
-        goodsCodeTemp: {'1': '临床研究费', '2': '伦理费'},    // 测试用，产品编号以及对应的标签名
-        // orderDataListTemp: [                             // 测试用，页面展示数据
+        goodsCodeTemp: {'1': '临床研究费', '2': '伦理费'},    // 产品编号以及对应的标签名，目前只有这两种
+        // orderDataListTemp: [                             // 测试用，页面展示数据的格式
         //   {label: '1', id: '12132312312312', name: '张三', date: '2019-03-21', number: '1232.00', prjName: { '1-1': '临床研究费', '1-2': '伦理费'}, disabled: false},
         //   {label: '2', id: '12132312312313', name: '张三', date: '2019-03-22', number: '1236.00', prjName: { '2-1': '临床研究费', '2-2': '伦理费'}, disabled: false},
         //   {label: '3', id: '12132312312314', name: '张三', date: '2019-03-23', number: '12377.00', prjName: { '3-1': '临床研究费', '3-2': '伦理费'}, disabled: true},
@@ -80,23 +81,30 @@
       // 在传回数据的基础上处理成页面显示的数据
       loadOrderData: function () {
         let orderData = this.$store.getters.getOrderData
-        for (let i = 0; i < orderData.length; i++) {
-          let item = {
-            label: (i + 1).toString(),                                // 开票序号
-            id: orderData[i].id,                                      // 流水号
-            name: orderData[i].payerAcctName,                         // 纳税人名字
-            date: orderData[i].transTime.substr(0, 11),               // 时间字段里面的日期的部分
-            number: orderData[i].transAmount,                         // 金额
-            prjName: {},                                              // 产品编号，待根据完整数据调整
-            disabled: orderData[i].invoiceStatus == 2 ? true : false  // 是否已经开票
+        if (orderData) {
+          for (let i = 0; i < orderData.length; i++) {
+            let item = {
+              label: (i + 1).toString(),                                // 开票序号
+              id: orderData[i].id,                                      // 流水号
+              name: orderData[i].payerAcctName,                         // 纳税人名字
+              date: orderData[i].transTime.substr(0, 11),               // 时间字段里面的日期的部分
+              number: orderData[i].transAmount,                         // 金额
+              prjName: {},                                              // 产品编号，待根据完整数据调整
+              disabled: orderData[i].invoiceStatus == 2 ? true : false  // 是否已经开票
+            }
+            // 添加项目名，因为测试数据传回来的没有goodsCode，所以只能按照设计图的设计强行加进来
+            // 如果在查询过程中得到的结果中就包含了完整的数据标号的话，这里会有不同的添加方法
+            for (var good in this.goodsCodeTemp) {
+              let label = (i + 1).toString() + '-' + good
+              item['prjName'][label] = this.goodsCodeTemp[good]
+            }
+            this.orderDataList.push(item)
           }
-          // 添加项目名，因为测试数据传回来的没有goodsCode，所以只能按照设计图的设计强行加进来
-          // 如果在查询过程中得到的结果中就包含了完整的数据标号的话，这里会有不同的添加方法
-          for (var good in this.goodsCodeTemp) {
-            let label = (i + 1).toString() + '-' + good
-            item['prjName'][label] = this.goodsCodeTemp[good]
-          }
-          this.orderDataList.push(item)
+        } else {
+          this.$message({
+            type: 'error',
+            message: '请重新查询'
+          })
         }
       },
       // 跟随主项目的选择对辅选择项目内容进行更变
@@ -115,18 +123,20 @@
             goodsCode: that.submitForm.radioSub.split('-')[1],
             id: that.orderDataList[parseInt(that.submitForm.radioMain) - 1]['id']
           }
-          // console.log(params)
           fetchOrderIssue(params).then((res) => {
             if (res.status == 200) {
             let retData = res.data
               if (retData.code == 1) {
-                // 暂时不知道提交申请成功之后需要做什么
                 let url = retData.data
-                console.log(url)
-                that.$message({
-                  type: 'success',
-                  message: retData.message
-                })
+                // // 考虑到可能需要连续提交同一天内多张票据，不移除数据。
+                // that.$store.dispatch('removeOrderData')
+                // // 提示成功信息
+                // that.$message({
+                //   type: 'success',
+                //   message: retData.message
+                // })
+                // // 跳转网页
+                window.location.href = url
               }
             } else {
               that.$message({
@@ -144,12 +154,13 @@
       }
     },
     computed: {
+      // 一共有多少条开票数据
       itemNum: function () {
         return this.orderDataList.length
       }
     },
     mounted: function () {
-      this.companyInfo.companyName = '浙江省肿瘤医院'
+      this.companyInfo.companyName = this.$store.getters.getCompanyName
       this.loadOrderData()
     }
   }
@@ -178,11 +189,8 @@
     .el-radio__inner::after {
       width: 0px;
       height: 0px;
-      content: "√";
-      color: white;
-      // 调整单选按钮内部对勾的位置，可以猜到肯定会有适配的问题
-      left: 24%;
-      top: 8%;
+      // 清除原本样式
+      content: "";
     }
 
     .submit-header {
@@ -201,9 +209,26 @@
     .submit-check-list {
       min-height: 180px;
 
-      // 不显示单选选项的label
+      // 关于单选框的样式设置见下
       .el-radio__label {
         display: none;
+      }
+      .el-radio__inner {
+        border: 0px;
+        background-color: transparent;
+      }
+      .el-radio__input {
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+      }
+      .radioIsChecked {
+        background: url('../assets/blue.png') no-repeat;
+        background-size: 100%;
+      }
+      .radioNotChecked {
+        background: url('../assets/gray.png') no-repeat;
+        background-size: 100%;
       }
 
       .submit-radio {

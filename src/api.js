@@ -11,3 +11,8 @@ export const fetchOrder = (params) => {
 export const fetchOrderIssue = (params) => {
   return axios.post(`${orderProxy}/order/issue/`, params, {headers: headers}).then((res) => res);
 }
+
+// 根据税号获取公司信息
+export const fetchCompanyInfo = (params) => {
+	return axios.get(`${orderProxy}/tax/${params.taxCode}`, {headers: headers}).then((res) => res);
+}

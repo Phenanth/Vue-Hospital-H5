@@ -16,7 +16,14 @@ const router = new Router({
     {
       path: '/query',
       name: 'Query',
-      component: Query
+      component: Query,
+      children: [
+        // 不知道是否有必要将查询页面的URL改为这种格式以用于获得税号进行后续查询
+        {
+          path: '/query/:taxCode',
+          component: Query
+        }
+      ]
     },
     {
       path: '/submit',
