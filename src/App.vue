@@ -31,8 +31,8 @@ html, body {
 /* 提示框样式 */
 .el-message {
   top: 35px !important;     /* 覆盖内联样式 */
-  min-width: 300px;
-  border-radius: 7px;
+  min-width: 300px !important;
+  border-radius: 7px !important;
 }
 
 /*#app {

@@ -50,7 +50,7 @@
           queryTime: '',
           queryAmount: ''
         },
-        imageUrl: require('../assets/icon.png'),      // webpack打包的原因，如果直接写url会当做字符串处理
+        imageUrl: require('static/icon.png'),      // webpack打包的原因，如果直接写url会当做字符串处理
         rulesQuery: {
           queryAmount: [
             {pattern: /^[\d\.]*$/, message: '金额只能是数字', trigger: 'blur'}
@@ -133,7 +133,7 @@
       // 根据URL获取税号并加载公司信息
       // 另外，获取URL的方法暂时是个谜（截止0916）
       this.loadCompanyInfo('http://ip:port/xxx/?taxCode=913301050609810663')
-      console.log('当前完整路径：', this.$route.path)
+      // console.log('当前完整路径：', this.$route.path)
       // 日期选择器的默认输入是当天的日期
       this.submitForm.queryTime = new Date()
     }
@@ -149,8 +149,7 @@
       width: 100%;
       padding: 3vh 0vh 5vh 0vh;
       //背景图
-      //background: linear-gradient(lightblue, #FFF), url('../assets/bg.png');
-      background-image: url('../assets/bg.png');
+      background-image: url('~static/bg.png');
       -webkit-background-size: cover;
       -moz-background-size: cover;
       -o-background-size: cover;

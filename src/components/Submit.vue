@@ -185,6 +185,7 @@
     .el-radio__inner {
       border: 1px solid #539BFD;
       border-radius: 100%;
+      background: transparent !important;
     }
     .el-radio__inner::after {
       width: 0px;
@@ -223,12 +224,14 @@
         width: 100%;
       }
       .radioIsChecked {
-        background: url('../assets/blue.png') no-repeat;
+        background: url('~static/blue.png') no-repeat;
         background-size: 100%;
+        z-index: 100;
       }
       .radioNotChecked {
-        background: url('../assets/gray.png') no-repeat;
+        background: url('~static/gray.png') no-repeat;
         background-size: 100%;
+        z-index: 100;
       }
 
       .submit-radio {

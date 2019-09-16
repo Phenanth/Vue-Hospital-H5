@@ -11,11 +11,11 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-        '/tax/api': {
-            target: 'http://192.168.100.11:8093/cancer-invoice',
+        '/api': {
+            target: 'http://192.168.100.11:8093',
             changeOrigin: true,
             pathRewrite: {
-                '^/tax/api': ''
+                '^/api': ''
             }
         }
     },
